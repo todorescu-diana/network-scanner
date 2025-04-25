@@ -230,64 +230,64 @@ class TCPScanner(Scanner):
         return open_or_filtered_p, closed_p
 
     def print_info_scanning(self, ip_addr):
-        if self.live:
+        if self.live and self.verbose:
             click.echo(f"Port scanning host {ip_addr}...")
-        if self.log:
-            logger.log(f"Port scanning host {ip_addr}...")
+        if self.log and self.verbose:
+            logger.info(f"Port scanning host {ip_addr}...")
 
     def print_info_checking(self, ip_addr, t, p):
         if self.live:
             click.echo(f"\tTrying TCP {t} Scan on host {ip_addr} on port {p}...")
         if self.log:
-            logger.log(f"\tTrying TCP {t} Scan on host {ip_addr} on port {p}...")
+            logger.info(f"\tTrying TCP {t} Scan on host {ip_addr} on port {p}...")
 
     def print_info_open_syn(self, p):
         if self.live:
             click.echo(f"\t\t[!] Port {p} is open (SYN-ACK received).")
         if self.log:
-            logger.log(f"\t\t[!] Port {p} is open (SYN-ACK received).")
+            logger.info(f"\t\t[!] Port {p} is open (SYN-ACK received).")
 
     def print_info_closed_syn(self, p):
         if self.live:
             click.echo(f"\t\tPort {p} is closed (RST-ACK received).")
         if self.log:
-            logger.log(f"\t\tPort {p} is closed (RST-ACK received).")
+            logger.linfoog(f"\t\tPort {p} is closed (RST-ACK received).")
 
     def print_info_filtered(self, p):
         if self.live:
             click.echo(f"\t\tPort {p} is filtered (did not respond).")
         if self.log:
-            logger.log(f"\t\tPort {p} is filtered (did not respond).")
+            logger.info(f"\t\tPort {p} is filtered (did not respond).")
 
     def print_info_open_connect(self, p):
         if self.live:
             click.echo(f"\t\t[!] Port {p} is open (succesful TCP 3-way Hansdshake).")
         if self.log:
-            logger.log(f"\t\t[!] Port {p} is open (succesful TCP 3-way Hansdshake).")
+            logger.info(f"\t\t[!] Port {p} is open (succesful TCP 3-way Hansdshake).")
 
     def print_info_closed_connect(self, p):
         if self.live:
             click.echo(f"\t\t[!] Port {p} is open.")
         if self.log:
-            logger.log(f"\t\t[!] Port {p} is open.")
+            logger.info(f"\t\t[!] Port {p} is open.")
 
     def print_info_closed_fnx(self, p):
         if self.live:
             click.echo(f"\t\tPort {p} is closed (RST received).")
         if self.log:
-            logger.log(f"\t\tPort {p} is closed (RST received).")
+            logger.info(f"\t\tPort {p} is closed (RST received).")
     
     def print_info_unexpected_fnx(self, p):
         if self.live:
             click.echo(f"\t\tUnexpected response - can't determine state of port {p}.")
         if self.log:
-            logger.log(f"\t\tUnexpected response - can't determine state of port {p}.")
+            logger.info(f"\t\tUnexpected response - can't determine state of port {p}.")
 
     def print_info_no_response_fnx(self, p):
         if self.live:
             click.echo(f"\t\tNo response. Port {p} is open or filtered.")
         if self.log:
-            logger.log(f"\t\tNo response. Port {p} is open or filtered.")
+            logger.info(f"\t\tNo response. Port {p} is open or filtered.")
 
     def print_table(self, categories):
         t = PrettyTable(["Port", "State"])
@@ -295,5 +295,7 @@ class TCPScanner(Scanner):
         for key, category in zip(categories.keys(), categories.values()):
             for port in category:
                 t.add_row([str(port), key])
-        
-        click.echo(t)
+        if self.live:
+            click.echo(t)
+        if self.log:
+            logger.info(t)

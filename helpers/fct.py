@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import ipaddress
 from pathlib import Path
 import logging

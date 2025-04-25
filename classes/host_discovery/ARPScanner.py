@@ -38,7 +38,7 @@ class ARPScanner(HostScanner):
                     if self.live:
                         click.echo(f"\tTry number {i+1}...")
                     if self.log:
-                        logger.log(f"\tTry number {i+1}...")
+                        logger.info(f"\tTry number {i+1}...")
                 response = scapy.srp(packet, timeout=self.h_timeout, verbose=False)[0]
                 if response: 
                     break
@@ -49,7 +49,7 @@ class ARPScanner(HostScanner):
             if self.live:
                 click.echo(f"[!] Host {ip_addr} is up.")
             if self.log:
-                logger.log(f"[!] Host {ip_addr} is up.")
+                logger.info(f"[!] Host {ip_addr} is up.")
 
             self.up_hosts.append(ip_addr)
 
@@ -58,13 +58,13 @@ class ARPScanner(HostScanner):
                 if self.live:
                     click.echo(f"Host {ip_addr} is down or not responding.")
                 if self.log:
-                    logger.log(f"Host {ip_addr} is down or not responding.")
+                    logger.info(f"Host {ip_addr} is down or not responding.")
 
     def print_info_checking(self, ip_addr):
         if self.live:
             click.echo(f"Checking {ip_addr}...")
         if self.log:
-            logger.log(f"Checking {ip_addr}...")
+            logger.info(f"Checking {ip_addr}...")
 
     def get_up_hosts(self):
         return self.up_hosts

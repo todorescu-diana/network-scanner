@@ -72,19 +72,19 @@ class ICMPScanner(HostScanner):
         if self.live:
             click.echo(f"Checking {ip_addr}...")
         if self.log:
-            logger.log(f"Checking {ip_addr}...")
+            logger.info(f"Checking {ip_addr}...")
     
     def print_info_up(self, ip_addr):
         if self.live:
             click.echo(f"[!] \t{ip_addr} is up.")
         if self.log:
-            logger.log(f"[!] \t{ip_addr} is up.")
+            logger.info(f"[!] \t{ip_addr} is up.")
 
     def print_info_down(self, ip_addr):
         if self.live:
             click.echo(f"[!] \t{ip_addr} is down or not responding.")
         if self.log:
-            logger.log(f"[!] \t{ip_addr} is down or not responding.")
+            logger.info(f"[!] \t{ip_addr} is down or not responding.")
 
     def get_up_hosts(self):
         return self.up_hosts
