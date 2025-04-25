@@ -296,8 +296,8 @@ class TCPScanner(Scanner):
             for port in category:
                 t.add_row([str(port), key])
         if self.live:
-            click.echo(f"\n[>] ip")
+            click.echo(f"\n[>] {ip}")
             click.echo(t)
         if self.log:
-            logger.info(f"\n[>] ip")
+            logger.info(f"\n[>] {ip}")
             logger.info(t)

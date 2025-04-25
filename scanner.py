@@ -1,3 +1,4 @@
+from ipaddress import ip_network
 import logging
 import signal
 import click
@@ -15,6 +16,7 @@ valid_protocols_str = " / ".join(valid_protocols)
 @click.option("--ip", default="", help="IP address or IP range to scan; Valid formats: <IP address> OR <IP address>/<prefix length>")
 @click.option("--h_retry", default=1, help="Number of times to retry to send host discovery probe. DEFAULT: 1")
 @click.option("--h_timeout", default=1, help="Time in seconds to wait for response to host discovery probe being sent. DEFAULT: 1")
+@click.option("--h_skip/--no-h_skip", default=False, help="Skip host discovery. Treat all hosts as online and do port scan. DEFAULT: --no-h_skip")
 @click.option("--proto", default=f"{valid_protocols[0]}", help=f"Protocol to use for port scanning; Options: {valid_protocols_str}; DEFAULT: {valid_protocols[0]}")
 @click.option("--ports", default="", help="Port(s) or range of ports to scan. Valid formats: <port_no> OR <port_no1>,<port_no2>,...,<port_non> OR <port_no1>-<port_no2> OR <port_no1>-<port_no2>,<port_no3>,<port_no4>-<port_no5>; DEFAULT: 20 most common TCP ports")
 @click.option("--mode", default=f"{valid_modes[2]}", help=f"Mode of operation; Options: {valid_modes_str}; DEFAULT: {valid_modes[2]}")
@@ -22,7 +24,7 @@ valid_protocols_str = " / ".join(valid_protocols)
 @click.option("--verbose/--no-verbose", default=False, help="Increase verbosity; DEFAULT: --no-verbose")
 @click.option("--v_verbose/--no-v_verbose", default=False, help="Increase verbosity even more; DEFAULT: --no-v_verbose")
 @click.option("--reason/--no-reason", default=False, help="Show reason for result; DEFAULT: --no-reason")
-def main(ip, h_retry, h_timeout, proto, ports, mode, show_only_up, verbose, v_verbose, reason):
+def main(ip, h_retry, h_timeout, h_skip, proto, ports, mode, show_only_up, verbose, v_verbose, reason):
     try:
         if check_ip_address_validity(ip) is False and check_ip_range_cidr_validity(ip) is False:
             click.echo(f"[!] Invalid IP address or range '{ip}'; Valid formats: <IP address> OR <IP address>/<prefix length>")
@@ -43,30 +45,37 @@ def main(ip, h_retry, h_timeout, proto, ports, mode, show_only_up, verbose, v_ve
         do_log = mode == valid_modes[0] or mode == valid_modes[1]
         do_live = mode == valid_modes[1] or mode == valid_modes[2]
 
-        is_in_LAN = check_if_ip_in_LAN(ip)
+        if not h_skip:
+            is_in_LAN = check_if_ip_in_LAN(ip)
+            
+            # host discovery
+            if is_in_LAN:
+                scanner = ScannerFactory.create_scanner("arp", h_retry, h_timeout, verbose=verbose, v_verbose=v_verbose, live=do_live, log=do_log, show_only_up=show_only_up, reason=reason)
+            else:
+                scanner = ScannerFactory.create_scanner("icmp", h_retry, h_timeout, verbose=verbose, v_verbose=v_verbose, live=do_live, log=do_log, show_only_up=show_only_up, reason=reason)
+
+            if do_log:
+                init_logging(ip)
+
+                if verbose:
+                    logger.info("[-] Started log\n")
+
+            else:
+                if verbose:
+                    click.echo("[-] Started log\n")
+
+            scanner.scan(ip)
+
+            up_hosts = scanner.get_up_hosts()
         
-        # host discovery
-        if is_in_LAN:
-            scanner = ScannerFactory.create_scanner("arp", h_retry, h_timeout, verbose=verbose, v_verbose=v_verbose, live=do_live, log=do_log, show_only_up=show_only_up, reason=reason)
-        else:
-            scanner = ScannerFactory.create_scanner("icmp", h_retry, h_timeout, verbose=verbose, v_verbose=v_verbose, live=do_live, log=do_log, show_only_up=show_only_up, reason=reason)
-
-        if do_log:
-            init_logging(ip)
-
-            if verbose:
-                logger.info("[-] Started log\n")
+            if scanner.stop:
+                exit(0)
 
         else:
-            if verbose:
-                click.echo("[-] Started log\n")
-
-        scanner.scan(ip)
-
-        up_hosts = scanner.get_up_hosts()
-
-        if scanner.stop:
-            exit(0)
+            if "/" not in ip:
+                up_hosts = [ip]
+            else:
+                up_hosts = [str(ip_addr) for ip_addr in ip_network(ip).hosts()]
 
         # port scanning
         extra_configs = {}

@@ -62,6 +62,9 @@ Options:
                                   discovery probe. DEFAULT: 1
   --h_timeout INTEGER             Time in seconds to wait for response to host
                                   discovery probe being sent. DEFAULT: 1
+  --h_skip / --no-h_skip          Skip host discovery. Treat all hosts as
+                                  online and do port scan. DEFAULT: --no-
+                                  h_skip
   --proto TEXT                    Protocol to use for port
                                   scanning; Options:
                                   tcp-syn / tcp-connect /
@@ -121,6 +124,12 @@ Time in seconds to wait for response to host discovery probe being sent. Useful 
 ```
 <time_s>
 ```
+
+* --h_skip option
+```
+--h_skip
+```
+Option to skip host discovery and treat all hosts as online, i.e. directly perform port scan on all target hosts.
 
 ### PORT SPECIFICATION & SCAN
 * --proto option
