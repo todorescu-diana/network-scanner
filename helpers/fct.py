@@ -8,6 +8,7 @@ import psutil
 from helpers.gen_const import most_common_20_tcp_ports
 
 def init_logging(ip):
+    ip = ip.replace("/", "_")
     now = datetime.now()
     current_datetime = now.strftime("%d-%m-%Y_%H-%M-%S")
     logfile_name = f"./logs/{ip}_{current_datetime}.log"

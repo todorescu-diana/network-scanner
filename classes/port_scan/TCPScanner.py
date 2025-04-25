@@ -30,7 +30,7 @@ class TCPScanner(Scanner):
                         "closed": c,
                         "filtered": f
                     }
-                    self.print_table(categories)
+                    self.print_table(ip, categories)
                 else:
                     for ip in ip_network(ip).hosts():
                         if self.stop:
@@ -43,7 +43,7 @@ class TCPScanner(Scanner):
                         "closed": c,
                         "filtered": f
                         }
-                        self.print_table(categories)
+                        self.print_table(ip, categories)
             elif self.extra_configs["type"] == "connect":
                 if "/" not in ip:
                     o, c, f = self.do_connect_scan(ip)
@@ -53,7 +53,7 @@ class TCPScanner(Scanner):
                         "closed": c,
                         "filtered": f
                     }
-                    self.print_table(categories)
+                    self.print_table(ip, categories)
                 else:
                     for ip in ip_network(ip).hosts():
                         if self.stop:
@@ -66,7 +66,7 @@ class TCPScanner(Scanner):
                         "closed": c,
                         "filtered": f
                         }
-                        self.print_table(categories)
+                        self.print_table(ip, categories)
             elif self.extra_configs["type"] == "fin" or self.extra_configs["type"] == "null" or self.extra_configs["type"] == "xmas":
                 if "/" not in ip:
                     o_f, c = self.do_fin_null_xmas_scan(ip, type=self.extra_configs["type"])
@@ -75,7 +75,7 @@ class TCPScanner(Scanner):
                         "open|filtered": o_f,
                         "closed": c,
                     }
-                    self.print_table(categories)
+                    self.print_table(ip, categories)
                 else:
                     for ip in ip_network(ip).hosts():
                         if self.stop:
@@ -87,7 +87,7 @@ class TCPScanner(Scanner):
                         "open|filtered": o_f,
                         "closed": c,
                         }
-                        self.print_table(categories)
+                        self.print_table(ip, categories)
 
     def do_syn_scan(self, ip_addr):
         self.print_info_scanning(ip_addr)
@@ -289,13 +289,15 @@ class TCPScanner(Scanner):
         if self.log:
             logger.info(f"\t\tNo response. Port {p} is open or filtered.")
 
-    def print_table(self, categories):
+    def print_table(self, ip, categories):
         t = PrettyTable(["Port", "State"])
         
         for key, category in zip(categories.keys(), categories.values()):
             for port in category:
                 t.add_row([str(port), key])
         if self.live:
+            click.echo(f"\n[>] ip")
             click.echo(t)
         if self.log:
+            logger.info(f"\n[>] ip")
             logger.info(t)
