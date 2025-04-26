@@ -46,13 +46,13 @@ def main(target, h_retry, h_timeout, h_skip, traceroute, proto, ports, mode, sho
         do_log = mode == valid_modes[0] or mode == valid_modes[1]
         do_live = mode == valid_modes[1] or mode == valid_modes[2]
 
-        ip = resolve_target(target)
+        target_ip = resolve_target(target)
 
-        if not ip:
+        if not target_ip:
             return
 
         if not h_skip:
-            is_in_LAN = check_if_ip_in_LAN(ip)
+            is_in_LAN = check_if_ip_in_LAN(target_ip)
             
             # host discovery
             if is_in_LAN:
@@ -61,7 +61,7 @@ def main(target, h_retry, h_timeout, h_skip, traceroute, proto, ports, mode, sho
                 scanner = ScannerFactory.create_scanner("icmp", h_retry, h_timeout, verbose=verbose, v_verbose=v_verbose, live=do_live, log=do_log, show_only_up=show_only_up, reason=reason)
 
             if do_log:
-                init_logging(ip)
+                init_logging(target_ip)
 
                 if verbose:
                     logger.info("[-] Started log\n")
@@ -70,7 +70,8 @@ def main(target, h_retry, h_timeout, h_skip, traceroute, proto, ports, mode, sho
                 if verbose:
                     click.echo("[-] Started log\n")
 
-            scanner.scan(ip)
+            ip_addr_list = scanner.get_ip_addr_list(target_ip)
+            scanner.scan(ip_addr_list)
 
             up_hosts = scanner.get_up_hosts()
         
@@ -97,7 +98,7 @@ def main(target, h_retry, h_timeout, h_skip, traceroute, proto, ports, mode, sho
 
         if scanner.stop:
             exit(0)
-            
+
         # port scanning
         extra_configs = {}
         if proto.split("-")[0] == "tcp":

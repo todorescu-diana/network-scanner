@@ -8,7 +8,7 @@ class Scanner:
         self.reason = reason
         self.stop = False
 
-    def scan(self, iprange):
+    def scan(self, ip_addr_list):
         raise NotImplementedError("This method should be overridden by subclasses.")
     
     def handle_interrupt(self, signum, frame):

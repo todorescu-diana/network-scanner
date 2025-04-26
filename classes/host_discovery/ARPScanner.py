@@ -7,21 +7,16 @@ import scapy.all as scapy
 from classes.base.HostScanner import HostScanner
 
 class ARPScanner(HostScanner):
-    def scan(self, ip):
+    def scan(self, ip_addr_list):
         signal.signal(signal.SIGINT, self.handle_interrupt)
         
-        if "/" not in ip:
+        for ip_addr in ip_addr_list:
+            if self.stop:
+                break
+            ip_addr_str = str(ip_addr)
             if self.verbose:
-                self.print_info_checking(ip)
-            self.do_arp_scan(ip)
-        else:
-            for ip_addr in ip_network(ip).hosts():
-                if self.stop:
-                    break
-                ip_addr_str = str(ip_addr)
-                if self.verbose:
-                    self.print_info_checking(ip_addr_str)
-                self.do_arp_scan(ip_addr_str)
+                self.print_info_checking(ip_addr_str)
+            self.do_arp_scan(ip_addr_str)
 
     def do_arp_scan(self, ip_addr):
         arp_req = scapy.ARP(pdst=ip_addr)

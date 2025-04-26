@@ -1,3 +1,4 @@
+from ipaddress import ip_network
 import logging
 import multiprocessing
 import signal
@@ -103,3 +104,9 @@ class HostScanner(Scanner):
                     logger.info(t)
         except KeyboardInterrupt:
             sys.exit(0)
+
+    def get_ip_addr_list(self, target):
+        if "/" not in target:
+            return [target]
+        else:
+            return ip_network(target).hosts()

@@ -10,21 +10,16 @@ from classes.base.HostScanner import HostScanner
 logger = logging.getLogger(__name__)
 
 class ICMPScanner(HostScanner):     
-    def scan(self, ip):
+    def scan(self, ip_addr_list):
         signal.signal(signal.SIGINT, self.handle_interrupt)
         
-        if "/" not in ip:
+        for ip_addr in ip_addr_list:
+            if self.stop:
+                break
+            ip_addr_str = str(ip_addr)
             if self.verbose:
-                self.print_info_checking(ip)
-            self.do_icmp_echo_req_scan(ip)
-        else:
-            for ip_addr in ip_network(ip).hosts():
-                if self.stop:
-                    break
-                ip_addr_str = str(ip_addr)
-                if self.verbose:
-                    self.print_info_checking(ip_addr_str)
-                self.do_icmp_echo_req_scan(ip_addr_str)
+                self.print_info_checking(ip_addr_str)
+            self.do_icmp_echo_req_scan(ip_addr_str)
 
         
     def do_icmp_echo_req_scan(self, ip_addr):
