@@ -135,6 +135,18 @@ Time in seconds to wait for response to host discovery probe being sent. Useful 
 ```
 Option to skip host discovery and treat all hosts as online, i.e. directly perform port scan on all target hosts.
 
+* --traceroute option
+```
+--traceroute
+```
+Perform traceroute to target by sending ICMP Echo Requests with increasing TTL values to discover each hop along the route.
+```
+* * * - no reply is received within the timeout
+```
+Destination target will reply with ICMP type 0 (ICMP Echo Reply).
+
+An intermediate router will reply with ICMP type 11 (ICMP Time Exceeded).
+
 ### PORT SPECIFICATION & SCAN
 * --proto option
 
