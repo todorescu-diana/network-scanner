@@ -291,9 +291,10 @@ class TCPScanner(Scanner):
         for key, category in zip(categories.keys(), categories.values()):
             for port in category:
                 t.add_row([str(port), key])
-        if self.live:
-            click.echo(f"\n[>] Port scan for {ip}")
-            click.echo(t)
-        if self.log:
-            logger.info(f"\n[>] Port scan for{ip}")
-            logger.info(t)
+        if not self.stop:
+            if self.live:
+                click.echo(f"\n[>] Port scan for {ip}")
+                click.echo(t)
+            if self.log:
+                logger.info(f"\n[>] Port scan for{ip}")
+                logger.info(t)

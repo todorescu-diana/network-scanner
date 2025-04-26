@@ -50,6 +50,21 @@ def check_ip_range_cidr_validity(ip):
 
     return bool(pattern.match(ip))
 
+def check_hostname_validity(hostname):
+    pattern = re.compile(r'''
+        ^
+        (?=.{1,253}$)                  # total length 1 to 253 characters
+        (                             
+            ([a-zA-Z0-9]               # start with alphanumeric
+            ([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])? # middle part: alphanumeric or hyphens, but cannot start/end with hyphen
+            \.)+                       # dot separator
+            [a-zA-Z]{2,63}             # TLD (like com, org, etc.)
+        )
+        $
+    ''', re.VERBOSE)
+
+    return bool(pattern.match(hostname))
+
 def check_ports_format(ports):
     if ports == "":
         return True
@@ -103,3 +118,14 @@ def check_if_ip_in_LAN(ip):
     else:
         obj = ipaddress.IPv4Network(ip, strict=False)
         return obj in l_n
+
+def resolve_target(target):
+    try:
+        ip_obj = ipaddress.ip_address(target)
+        return str(ip_obj)
+    except ValueError:
+        resolved_ip = socket.gethostbyname(target)
+        return resolved_ip
+    except socket.gaierror:
+        print(f"[!] Could not resolve hostname: {target}")
+        return None

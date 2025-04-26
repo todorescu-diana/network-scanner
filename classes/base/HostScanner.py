@@ -1,4 +1,5 @@
 import logging
+import multiprocessing
 import signal
 import socket
 import sys
@@ -52,10 +53,7 @@ class HostScanner(Scanner):
                 hop_ip = reply.src
                 rtt = (end_time - start_time) * 1000 # ms
 
-                try:
-                    hop_name = socket.gethostbyname_ex(hop_ip)[0]
-                except socket.herror:
-                    hop_name = hop_ip
+                hop_name = self.get_host_name_async(hop_ip)
 
                 addr_str = str(hop_ip) + f" ({hop_name})" if hop_name != str(hop_ip) else str(hop_ip)
 
@@ -72,6 +70,21 @@ class HostScanner(Scanner):
             ttl += 1
 
         return traceroute_data
+    
+    def get_host_by_addr(self,hop_ip):
+        try:
+            hop_name = socket.gethostbyaddr(hop_ip)[0]
+            return hop_name
+        except (socket.herror, socket.gaierror):
+            return hop_ip
+    
+    def get_host_name_async(self, ip_address):
+        with multiprocessing.Pool(processes=1) as pool:
+            try:
+                result = pool.apply_async(self.get_host_by_addr, (ip_address, ))
+                return result.get(timeout=2)
+            except multiprocessing.context.TimeoutError:
+                return ip_address
 
     def print_traceroute_table(self, ip, traceroute_data):
         try:
@@ -81,12 +94,12 @@ class HostScanner(Scanner):
                     if self.stop:
                         break
                     t.add_row([str(entry["hop"]), str(entry["rtt"]), str(entry["address"])])
-
-            if self.live:
-                click.echo(f"\n[>] Traceroute to {ip}")
-                click.echo(t)
-            if self.log:
-                logger.info(f"\n[>] Traceroute to {ip}")
-                logger.info(t)
+            if not self.stop:
+                if self.live:
+                    click.echo(f"\n[>] Traceroute to {ip}")
+                    click.echo(t)
+                if self.log:
+                    logger.info(f"\n[>] Traceroute to {ip}")
+                    logger.info(t)
         except KeyboardInterrupt:
             sys.exit(0)
