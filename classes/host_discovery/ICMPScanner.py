@@ -9,11 +9,7 @@ from classes.base.HostScanner import HostScanner
 
 logger = logging.getLogger(__name__)
 
-class ICMPScanner(HostScanner):
-    def handle_interrupt(self, signum, frame):
-        print("\n[*] Ctrl+C detected. Stopping scan.")
-        self.stop = True
-        
+class ICMPScanner(HostScanner):     
     def scan(self, ip):
         signal.signal(signal.SIGINT, self.handle_interrupt)
         
@@ -70,9 +66,9 @@ class ICMPScanner(HostScanner):
 
     def print_info_checking(self, ip_addr):
         if self.live:
-            click.echo(f"Checking {ip_addr}...")
+            click.echo(f"-> Checking {ip_addr}...")
         if self.log:
-            logger.info(f"Checking {ip_addr}...")
+            logger.info(f"-> Checking {ip_addr}...")
     
     def print_info_up(self, ip_addr):
         if self.live:

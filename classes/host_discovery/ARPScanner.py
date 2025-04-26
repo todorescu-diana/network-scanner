@@ -7,10 +7,6 @@ import scapy.all as scapy
 from classes.base.HostScanner import HostScanner
 
 class ARPScanner(HostScanner):
-    def handle_interrupt(self, signum, frame):
-        print("\n[*] Ctrl+C detected. Stopping scan.")
-        self.stop = True
-
     def scan(self, ip):
         signal.signal(signal.SIGINT, self.handle_interrupt)
         
@@ -62,9 +58,9 @@ class ARPScanner(HostScanner):
 
     def print_info_checking(self, ip_addr):
         if self.live:
-            click.echo(f"Checking {ip_addr}...")
+            click.echo(f"-> Checking {ip_addr}...")
         if self.log:
-            logger.info(f"Checking {ip_addr}...")
+            logger.info(f"-> Checking {ip_addr}...")
 
     def get_up_hosts(self):
         return self.up_hosts

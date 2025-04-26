@@ -1,5 +1,15 @@
+import logging
+import signal
+import socket
+import sys
+import time
+import click
+from prettytable import PrettyTable
+import scapy.all as scapy
 from classes.base.Scanner import Scanner
 
+
+logger = logging.getLogger(__name__)
 
 class HostScanner(Scanner):
     def __init__(self, h_retry=1, h_timeout=1, verbose=False, v_verbose=False, live=True, log=False, extra_configs={}, show_only_up=False, reason=False):
@@ -17,3 +27,66 @@ class HostScanner(Scanner):
 
     def scan(self, iprange):
         raise NotImplementedError("This method should be overridden by subclasses.")
+    
+    def do_traceroute(self, target, max_hops=30, timeout=1):
+        signal.signal(signal.SIGINT, self.handle_interrupt)
+        
+        ttl = 1
+        traceroute_data = []
+
+        while ttl < max_hops:
+            if self.stop:
+                break
+            packet = scapy.IP(dst=target, ttl=ttl) / scapy.ICMP()
+
+            start_time = time.time()
+            try:
+                reply = scapy.sr1(packet, timeout=timeout, verbose=False)
+            except KeyboardInterrupt:
+                sys.exit(0)
+            end_time = time.time()
+
+            if reply is None:
+                traceroute_data.append({"hop": ttl, "rtt": "* * *", "address": "* * *"})
+            else:
+                hop_ip = reply.src
+                rtt = (end_time - start_time) * 1000 # ms
+
+                try:
+                    hop_name = socket.gethostbyname_ex(hop_ip)[0]
+                except socket.herror:
+                    hop_name = hop_ip
+
+                addr_str = str(hop_ip) + f" ({hop_name})" if hop_name != str(hop_ip) else str(hop_ip)
+
+                if reply.haslayer(scapy.ICMP):
+                    icmp_type = reply.getlayer(scapy.ICMP).type
+                    if icmp_type == 0:  # ICMP Echo Reply (destination reached)
+                        traceroute_data.append({"hop": ttl, "rtt": str(round(rtt, 2)) + " ms", "address": addr_str})
+                        break
+                    elif icmp_type == 11:  # ICMP Time Exceeded (router hop)
+                        traceroute_data.append({"hop": ttl, "rtt": str(round(rtt, 2)) + " ms", "address": addr_str})
+                    elif icmp_type == 3:  # ICMP Destination Unreachable
+                        pass
+            
+            ttl += 1
+
+        return traceroute_data
+
+    def print_traceroute_table(self, ip, traceroute_data):
+        try:
+            t = PrettyTable(["Hop", "Rtt", "Address"])
+
+            for entry in traceroute_data:
+                    if self.stop:
+                        break
+                    t.add_row([str(entry["hop"]), str(entry["rtt"]), str(entry["address"])])
+
+            if self.live:
+                click.echo(f"\n[>] Traceroute to {ip}")
+                click.echo(t)
+            if self.log:
+                logger.info(f"\n[>] Traceroute to {ip}")
+                logger.info(t)
+        except KeyboardInterrupt:
+            sys.exit(0)

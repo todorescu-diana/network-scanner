@@ -65,6 +65,10 @@ Options:
   --h_skip / --no-h_skip          Skip host discovery. Treat all hosts as
                                   online and do port scan. DEFAULT: --no-
                                   h_skip
+  --traceroute / --no-traceroute  Perform traceroute to
+                                  show hop path to
+                                  target host(s). DEFAULT:
+                                  --no-traceroute
   --proto TEXT                    Protocol to use for port
                                   scanning; Options:
                                   tcp-syn / tcp-connect /

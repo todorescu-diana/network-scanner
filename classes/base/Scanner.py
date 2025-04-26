@@ -10,3 +10,7 @@ class Scanner:
 
     def scan(self, iprange):
         raise NotImplementedError("This method should be overridden by subclasses.")
+    
+    def handle_interrupt(self, signum, frame):
+        print("\n[*] Ctrl+C detected. Stopping scan.")
+        self.stop = True

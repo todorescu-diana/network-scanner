@@ -13,10 +13,6 @@ from classes.base.Scanner import Scanner
 logger = logging.getLogger(__name__)
 
 class TCPScanner(Scanner):
-    def handle_interrupt(self, signum, frame):
-        print("\n[*] Ctrl+C detected. Stopping scan.")
-        self.stop = True
-
     def scan(self, ip):
         signal.signal(signal.SIGINT, self.handle_interrupt)
         
@@ -296,8 +292,8 @@ class TCPScanner(Scanner):
             for port in category:
                 t.add_row([str(port), key])
         if self.live:
-            click.echo(f"\n[>] {ip}")
+            click.echo(f"\n[>] Port scan for {ip}")
             click.echo(t)
         if self.log:
-            logger.info(f"\n[>] {ip}")
+            logger.info(f"\n[>] Port scan for{ip}")
             logger.info(t)

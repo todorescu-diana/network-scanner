@@ -17,6 +17,7 @@ valid_protocols_str = " / ".join(valid_protocols)
 @click.option("--h_retry", default=1, help="Number of times to retry to send host discovery probe. DEFAULT: 1")
 @click.option("--h_timeout", default=1, help="Time in seconds to wait for response to host discovery probe being sent. DEFAULT: 1")
 @click.option("--h_skip/--no-h_skip", default=False, help="Skip host discovery. Treat all hosts as online and do port scan. DEFAULT: --no-h_skip")
+@click.option("--traceroute/--no-traceroute", default=False, help="Perform traceroute to show hop path to target host(s). DEFAULT: --no-traceroute")
 @click.option("--proto", default=f"{valid_protocols[0]}", help=f"Protocol to use for port scanning; Options: {valid_protocols_str}; DEFAULT: {valid_protocols[0]}")
 @click.option("--ports", default="", help="Port(s) or range of ports to scan. Valid formats: <port_no> OR <port_no1>,<port_no2>,...,<port_non> OR <port_no1>-<port_no2> OR <port_no1>-<port_no2>,<port_no3>,<port_no4>-<port_no5>; DEFAULT: 20 most common TCP ports")
 @click.option("--mode", default=f"{valid_modes[2]}", help=f"Mode of operation; Options: {valid_modes_str}; DEFAULT: {valid_modes[2]}")
@@ -24,7 +25,7 @@ valid_protocols_str = " / ".join(valid_protocols)
 @click.option("--verbose/--no-verbose", default=False, help="Increase verbosity; DEFAULT: --no-verbose")
 @click.option("--v_verbose/--no-v_verbose", default=False, help="Increase verbosity even more; DEFAULT: --no-v_verbose")
 @click.option("--reason/--no-reason", default=False, help="Show reason for result; DEFAULT: --no-reason")
-def main(ip, h_retry, h_timeout, h_skip, proto, ports, mode, show_only_up, verbose, v_verbose, reason):
+def main(ip, h_retry, h_timeout, h_skip, traceroute, proto, ports, mode, show_only_up, verbose, v_verbose, reason):
     try:
         if check_ip_address_validity(ip) is False and check_ip_range_cidr_validity(ip) is False:
             click.echo(f"[!] Invalid IP address or range '{ip}'; Valid formats: <IP address> OR <IP address>/<prefix length>")
@@ -76,6 +77,19 @@ def main(ip, h_retry, h_timeout, h_skip, proto, ports, mode, show_only_up, verbo
                 up_hosts = [ip]
             else:
                 up_hosts = [str(ip_addr) for ip_addr in ip_network(ip).hosts()]
+
+        if traceroute:
+            for ip_addr in up_hosts:
+                if scanner.stop:
+                    exit(0)
+                if verbose:
+                    if do_live:
+                        click.echo(f"\n-> Tracing route to {ip_addr}...")
+                    if do_log:
+                        logger.info(f"\n-> Tracing route to {ip_addr}...")
+                traceroute_data = scanner.do_traceroute(ip_addr)
+                scanner.print_traceroute_table(ip_addr, traceroute_data)
+
 
         # port scanning
         extra_configs = {}
