@@ -54,11 +54,11 @@ python ./scanner.py --help
 Usage: scanner.py [OPTIONS]
 
 Options:
-  --ip TEXT                       IP address or IP range 
+  --target TEXT                   IP address or IP range 
                                   to scan; Valid formats:
                                   <IP address> OR <IP 
                                   address>/<prefix length>
-                                  OR <hostname>
+                                  OR <hostname> OR <hostname>/<prefix length>
   --h_retry INTEGER               Number of times to retry to send host
                                   discovery probe. DEFAULT: 1
   --h_timeout INTEGER             Time in seconds to wait for response to host
@@ -100,7 +100,7 @@ Options:
 
 ### TARGET SPECIFICATION
 
-* --ip option
+* --target option
 ```
 <IP address>
 ```
@@ -113,6 +113,10 @@ Scans targets in the given CIDR address range.
 <hostname>
 ```
 Scans the target at the given hostname.
+```
+<hostname>/<prefix length>
+```
+Scans targets in the given CIDR address range.
 
 ### HOST DISCOVERY
 #### * Given target host / network is in LAN:
