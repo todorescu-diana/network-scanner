@@ -59,6 +59,7 @@ Options:
                                   <IP address> OR <IP 
                                   address>/<prefix length>
                                   OR <hostname> OR <hostname>/<prefix length>
+                                  OR <ip_as_octet_ranges>
   --h_retry INTEGER               Number of times to retry to send host
                                   discovery probe. DEFAULT: 1
   --h_timeout INTEGER             Time in seconds to wait for response to host
@@ -117,6 +118,10 @@ Scans the target at the given hostname.
 <hostname>/<prefix length>
 ```
 Scans targets in the given CIDR address range.
+```
+<ip_as_octet_ranges>: example - 10.0.0-1.1-2 scans 10.0.0.1, 10.0.0.2, 10.0.1.1, 10.0.1.2
+```
+Scans targets obtained using specified octet ranges.
 
 ### HOST DISCOVERY
 #### * Given target host / network is in LAN:

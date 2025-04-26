@@ -13,48 +13,45 @@ from classes.base.Scanner import Scanner
 logger = logging.getLogger(__name__)
 
 class TCPScanner(Scanner):
-    def scan(self, ip_addr_list):
+    def scan(self, ip):
         signal.signal(signal.SIGINT, self.handle_interrupt)
         
         if "type" in self.extra_configs.keys():
             if self.extra_configs["type"] == "syn":
-                for ip in ip_addr_list:
-                    if self.stop:
-                        break
-                    ip_str = str(ip)
-                    o, c, f = self.do_syn_scan(ip_str)
+                # if self.stop:
+                #     break
+                ip_str = str(ip)
+                o, c, f = self.do_syn_scan(ip_str)
 
-                    categories = {
-                    "open": o,
-                    "closed": c,
-                    "filtered": f
-                    }
-                    self.print_table(ip, categories)
+                categories = {
+                "open": o,
+                "closed": c,
+                "filtered": f
+                }
+                self.print_table(ip, categories)
             elif self.extra_configs["type"] == "connect":
-                for ip in ip_addr_list:
-                    if self.stop:
-                        break
-                    ip_str = str(ip)
-                    o, c, f = self.do_connect_scan(ip_str)
+                # if self.stop:
+                #     break
+                ip_str = str(ip)
+                o, c, f = self.do_connect_scan(ip_str)
 
-                    categories = {
-                    "open": o,
-                    "closed": c,
-                    "filtered": f
-                    }
-                    self.print_table(ip, categories)
+                categories = {
+                "open": o,
+                "closed": c,
+                "filtered": f
+                }
+                self.print_table(ip, categories)
             elif self.extra_configs["type"] == "fin" or self.extra_configs["type"] == "null" or self.extra_configs["type"] == "xmas":
-                for ip in ip_addr_list:
-                    if self.stop:
-                        break
-                    ip_str = str(ip)
-                    o_f, c = self.do_fin_null_xmas_scan(ip, type=self.extra_configs["type"])
+                # if self.stop:
+                #     break
+                ip_str = str(ip)
+                o_f, c = self.do_fin_null_xmas_scan(ip, type=self.extra_configs["type"])
 
-                    categories = {
-                    "open|filtered": o_f,
-                    "closed": c,
-                    }
-                    self.print_table(ip, categories)
+                categories = {
+                "open|filtered": o_f,
+                "closed": c,
+                }
+                self.print_table(ip, categories)
 
     def do_syn_scan(self, ip_addr):
         self.print_info_scanning(ip_addr)

@@ -4,7 +4,7 @@ import signal
 import click
 from scapy.all import *
 from classes.base.ScannerFactory import ScannerFactory
-from helpers.fct import check_hostname_range_validity, check_hostname_validity, check_if_ip_in_LAN, check_ip_address_validity, check_ip_range_cidr_validity, check_ports_format, get_tcp_extra_configs, init_logging, resolve_target
+from helpers.fct import check_hostname_range_validity, check_hostname_validity, check_if_ip_in_LAN, check_ip_address_validity, check_ip_octet_range_address_validity, check_ip_range_cidr_validity, check_ports_format, get_tcp_extra_configs, init_logging, resolve_target
 from helpers.gen_const import valid_modes, valid_protocols
 
 logger = logging.getLogger(__name__)
@@ -13,7 +13,7 @@ valid_modes_str = " / ".join(valid_modes)
 valid_protocols_str = " / ".join(valid_protocols)
 
 @click.command()
-@click.option("--target", default="", help="IP address or IP range to scan; Valid formats: <IP address> OR <IP address>/<prefix length> OR <hostname> OR <hostname>/<prefix length>")
+@click.option("--target", default="", help="IP address or IP range to scan; Valid formats: <IP address> OR <IP address>/<prefix length> OR <hostname> OR <hostname>/<prefix length> OR <ip_as_octet_ranges>")
 @click.option("--h_retry", default=1, help="Number of times to retry to send host discovery probe. DEFAULT: 1")
 @click.option("--h_timeout", default=1, help="Time in seconds to wait for response to host discovery probe being sent. DEFAULT: 1")
 @click.option("--h_skip/--no-h_skip", default=False, help="Skip host discovery. Treat all hosts as online and do port scan. DEFAULT: --no-h_skip")
@@ -27,8 +27,8 @@ valid_protocols_str = " / ".join(valid_protocols)
 @click.option("--reason/--no-reason", default=False, help="Show reason for result; DEFAULT: --no-reason")
 def main(target, h_retry, h_timeout, h_skip, traceroute, proto, ports, mode, show_only_up, verbose, v_verbose, reason):
     try:
-        if check_ip_address_validity(target) is False and check_ip_range_cidr_validity(target) is False and check_hostname_validity(target) is False and check_hostname_range_validity(target) is False:
-            click.echo(f"[!] Invalid IP address or range '{target}'; Valid formats: <IP address> OR <IP address>/<prefix length> OR <hostname> OR <hostname>/<prefix length>")
+        if check_ip_address_validity(target) is False and check_ip_range_cidr_validity(target) is False and check_hostname_validity(target) is False and check_hostname_range_validity(target) is False and check_ip_octet_range_address_validity(target) is False:
+            click.echo(f"[!] Invalid IP address or range '{target}'; Valid formats: <IP address> OR <IP address>/<prefix length> OR <hostname> OR <hostname>/<prefix length> OR <ip_as_octet_ranges>")
             exit(0)
         if check_ports_format(ports) is False:
             click.echo(f"[!] Invalid ports format; Valid formats: <port_no> OR <port_no1>,<port_no2>,...,<port_non> OR <port_no1>-<port_no2> OR <port_no1>-<port_no2>,<port_no3>,<port_no4>-<port_no5>")
@@ -46,10 +46,13 @@ def main(target, h_retry, h_timeout, h_skip, traceroute, proto, ports, mode, sho
         do_log = mode == valid_modes[0] or mode == valid_modes[1]
         do_live = mode == valid_modes[1] or mode == valid_modes[2]
 
-        target_ip = resolve_target(target)
+        if not "-" in target:
+            target_ip = resolve_target(target)
 
-        if not target_ip:
-            return
+            if not target_ip:
+                return
+        else:
+            target_ip = target
 
         if not h_skip:
             is_in_LAN = check_if_ip_in_LAN(target_ip)

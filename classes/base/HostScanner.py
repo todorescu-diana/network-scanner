@@ -1,4 +1,4 @@
-from ipaddress import ip_network
+from ipaddress import ip_address, ip_network
 import logging
 import multiprocessing
 import signal
@@ -9,6 +9,7 @@ import click
 from prettytable import PrettyTable
 import scapy.all as scapy
 from classes.base.Scanner import Scanner
+from helpers.fct import get_ip_addr_list_from_octet_ranges
 
 
 logger = logging.getLogger(__name__)
@@ -106,7 +107,11 @@ class HostScanner(Scanner):
             sys.exit(0)
 
     def get_ip_addr_list(self, target):
-        if "/" not in target:
-            return [target]
+        list = []
+        if "-" in target:
+            return get_ip_addr_list_from_octet_ranges(target)
+        elif "/" not in target:
+            list.append(ip_address(target))
+            return list
         else:
             return ip_network(target).hosts()

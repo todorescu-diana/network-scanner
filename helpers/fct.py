@@ -84,6 +84,39 @@ def check_hostname_range_validity(hostname):
 
     return bool(pattern.match(hostname))
 
+def check_ip_octet_range_address_validity(ip):
+    # check format
+    pattern = re.compile(r'''
+        ^
+        (
+            (?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)
+            (?:-(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d))?
+            \.
+            (?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)
+            (?:-(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d))?
+            \.
+            (?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)
+            (?:-(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d))?
+            \.
+            (?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)
+            (?:-(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d))?
+        )
+        $
+    ''', re.VERBOSE)
+
+    if not pattern.match(ip):
+        return False
+
+    # check logic
+    octets = ip.split('.')
+    for octet in octets:
+        if '-' in octet:
+            start, end = octet.split('-')
+            if int(start) > int(end):
+                return False
+
+    return True
+
 def check_ports_format(ports):
     if ports == "":
         return True
@@ -131,12 +164,40 @@ def get_local_networks():
 
 def check_if_ip_in_LAN(ip):
     l_n = get_local_networks()
-    if "/" not in ip:
-        obj = ipaddress.ip_address(ip)
-        return any(obj in net for net in l_n)
+    if "-" not in ip:
+        if "/" not in ip:
+            obj = ipaddress.ip_address(ip)
+            return any(obj in net for net in l_n)
+        else:
+            obj = ipaddress.IPv4Network(ip, strict=False)
+            return obj in l_n
     else:
-        obj = ipaddress.IPv4Network(ip, strict=False)
-        return obj in l_n
+        ip_addr_list = get_ip_addr_list_from_octet_ranges(ip)
+        first_addr = ip_addr_list[0]
+        return any(first_addr in net for net in l_n)
+
+def get_ip_addr_list_from_octet_ranges(target):
+    octets = target.split(".")
+    ip_addr_list = []
+    ranges = []
+
+    for octet in octets:
+        if "-" in octet:
+            start, end = map(int, octet.split("-"))
+            if start == 0:
+                start = 1
+            ranges.append(range(start, end+1))
+        else:
+            value = int(octet)
+            ranges.append([value])
+
+    for o1 in ranges[0]:
+        for o2 in ranges[1]:
+            for o3 in ranges[2]:
+                for o4 in ranges[3]:
+                    ip_addr_list.append(ipaddress.ip_address(f"{o1}.{o2}.{o3}.{o4}"))
+
+    return ip_addr_list
 
 def resolve_target(target):
     if "/" not in target:
