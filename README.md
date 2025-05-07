@@ -1,9 +1,9 @@
 # Network Scanner
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 
-Network Scanner is a network discovery command-line application developed with Python (using Scapy library).
+Network Scanner is a basic network discovery command-line application developed with Python (using Scapy library).
 
-It enables host, ports and services discovery, inspired by the workings of Nmap.
+It enables host and port scanning, inspired by the workings of Nmap.
 
 ## Installation
 - _python3_ may have to be used instead of _python_, depending on your configuration.
