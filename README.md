@@ -1,4 +1,4 @@
-# Network Scanner - In progress
+# Network Scanner
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 
 Network Scanner is a network discovery command-line application developed with Python (using Scapy library).
@@ -211,3 +211,9 @@ live
 Only writes the output to the command line.
 
 In case of only-log or log-live modes, logs are saved in the ./logs folder.
+
+## Example
+```
+python scanner.py --target scanme.nmap.org
+```
+![Example 1](img/example1.png)
